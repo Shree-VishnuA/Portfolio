@@ -1,20 +1,9 @@
 "use client";
 import ThemeToggle from "./Themetoggle";
 import { useState, useRef, useEffect } from "react";
-import {
-  motion,
-  AnimatePresence,
-  useScroll,
-  useTransform,
-} from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { cn } from "@/lib/utils";
-import {
-  House,
-  Hammer,
-  BriefcaseBusiness,
-  GraduationCap,
-  Phone,
-} from "lucide-react";
+import { House, Hammer, BriefcaseBusiness, GraduationCap, Phone } from "lucide-react";
 
 const Navbar = () => {
   const navs = [
@@ -28,10 +17,19 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [menuHeight, setMenuHeight] = useState(0);
   const menuRef = useRef(null);
-  const ScrollYP = useScroll().scrollYProgress;
-  const navWidth = useTransform(ScrollYP, [0, 1.2], ["95%", "40%"]);
-
   const [activeSection, setActiveSection] = useState("home");
+  const [isMobile, setIsMobile] = useState(false);
+
+  const ScrollYP = useScroll().scrollYProgress;
+  const navWidthDesktop = useTransform(ScrollYP, [0, 1.2], ["95%", "40%"]);
+
+  // Update mobile flag
+  useEffect(() => {
+    const checkScreen = () => setIsMobile(window.innerWidth < 768);
+    checkScreen();
+    window.addEventListener("resize", checkScreen);
+    return () => window.removeEventListener("resize", checkScreen);
+  }, []);
 
   useEffect(() => {
     if (menuRef.current) {
@@ -42,7 +40,7 @@ const Navbar = () => {
       if (window.innerWidth >= 768) setIsOpen(false);
     });
 
-    // ✅ Track sections in viewport
+    // Track sections in viewport
     const sections = document.querySelectorAll("section[id]");
     const observer = new IntersectionObserver(
       (entries) => {
@@ -65,10 +63,10 @@ const Navbar = () => {
         border: isOpen ? 0 : 4,
         height: isOpen ? 56 + menuHeight : 14 * 4,
       }}
-      style={{ width: navWidth }}
+      style={{ width: isMobile ? "95%" : navWidthDesktop }} // ✅ Fixed width on mobile
       transition={{ duration: 0.3, ease: "easeInOut" }}
       className={cn(
-        "w-full rounded-full sticky top-3  backdrop-blur-3xl h-14 mx-auto flex flex-col justify-center px-5 border z-50"
+        "w-full rounded-full mont sticky top-3  backdrop-blur-3xl h-14 mx-auto flex flex-col justify-center px-5 border z-50"
       )}
     >
       <div className="w-full flex justify-between items-center">
@@ -78,7 +76,7 @@ const Navbar = () => {
             {navs.map(({ title, link, icon: Icon }, ind) => (
               <motion.a
                 key={ind}
-                href={link} // use "link" instead of "nav.link"
+                href={link}
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: ind * 0.1 }}
@@ -88,7 +86,9 @@ const Navbar = () => {
                     ? "text-blue-600 dark:text-blue-400 font-semibold flex justify-center items-center gap-1"
                     : "text-gray-700 dark:text-gray-200 flex justify-center items-center gap-2"
                 )}
-              ><Icon size={15} weight="duotone" className="text-current" />{title}
+              >
+                <Icon size={15} weight="duotone" className="text-current" />
+                {title}
                 {activeSection === link.slice(1) && (
                   <motion.div
                     layoutId="activeIndicator"
@@ -103,10 +103,7 @@ const Navbar = () => {
         <div className="flex items-center gap-2 justify-center">
           <ThemeToggle />
 
-          <button
-            onClick={() => setIsOpen((prev) => !prev)}
-            className="md:hidden"
-          >
+          <button onClick={() => setIsOpen((prev) => !prev)} className="md:hidden">
             <motion.div
               animate={{ rotate: isOpen ? 45 : 0 }}
               className="w-[18px] h-[1.5px] rounded-full bg-foreground"

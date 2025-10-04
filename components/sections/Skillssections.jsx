@@ -16,7 +16,7 @@ const Skillssections = () => {
   return (
     <section
       id="skills"
-      className="w-full py-20 bg-gradient-to-b from-white to-gray-50 dark:from-[#0a0a0a] dark:to-black"
+      className="w-full py-20 "
     >
       <div className="max-w-6xl mx-auto px-6 text-center">
         {/* Heading */}

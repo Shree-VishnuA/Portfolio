@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTheme } from "next-themes";
 
-export default function ParticleField({ count = 300 }) {
+export default function ParticleField() {
   const canvasRef = useRef(null);
   const particles = useRef([]);
   const mouseRef = useRef({
@@ -13,23 +13,46 @@ export default function ParticleField({ count = 300 }) {
   const prevMouseRef = useRef({ x: mouseRef.current.x, y: mouseRef.current.y });
   const { theme } = useTheme();
 
+  // State to track responsive particle count and size
+  const [particleCount, setParticleCount] = useState(300);
+  const [particleSize, setParticleSize] = useState(1);
+
+  useEffect(() => {
+    const updateParticleSettings = () => {
+      const width = window.innerWidth;
+      if (width >= 1280) {
+        setParticleCount(230);
+        setParticleSize(1);
+      } else if (width >= 1024) {
+        setParticleCount(100);
+        setParticleSize(0.85);
+      } else if (width >= 768) {
+        setParticleCount(90);
+        setParticleSize(0.7);
+      } else if (width >= 480) {
+        setParticleCount(60);
+        setParticleSize(0.6);
+      } else {
+        setParticleCount(40); // mobile
+        setParticleSize(0.5);
+      }
+    };
+
+    updateParticleSettings();
+    window.addEventListener("resize", updateParticleSettings);
+    return () => window.removeEventListener("resize", updateParticleSettings);
+  }, []);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     let w = (canvas.width = window.innerWidth);
     let h = (canvas.height = window.innerHeight);
 
-    const darkColors = ["#3b3b3b", "#222222", "#242424", "#141414"];
-    const lightColors = [
-      "#D4D4D8",
-      // "#C5C6C9",
-      "#B6B8BB",
-      // "#A8AAAD",
-      "#FFFFFF",
-      // "#FAFAFA",
-      "#F5F5F5",
-      // "#EDEDED",
-    ];
+    const darkColors = ["#0A0A0B", "#141415", "#1A1A1C", "#202023"];
+
+    const lightColors = ["#F2F2F3", "#E8E9EB", "#E0E0E0", "#E4E4E7"];
+
 
     const getColors = () => (theme === "dark" ? darkColors : lightColors);
 
@@ -47,11 +70,12 @@ export default function ParticleField({ count = 300 }) {
       return points;
     };
 
-    // Initialize particles only once
-    if (particles.current.length === 0) {
-      particles.current = Array.from({ length: count }, () => {
+    // Initialize or update particles based on count and size
+    if (particles.current.length !== particleCount) {
+      particles.current = Array.from({ length: particleCount }, () => {
         const r = Math.random();
-        const size = r * r * 30 + 5; // increase large particle size
+        const baseSize = r * r * 30 + 5;
+        const size = baseSize * particleSize; // Apply responsive sizing
         const shapeType = Math.random() < 0.7 ? "polygon" : "circle";
         return {
           x: Math.random() * w,
@@ -59,6 +83,7 @@ export default function ParticleField({ count = 300 }) {
           vx: (Math.random() - 0.5) * 0.5,
           vy: (Math.random() - 0.5) * 0.5,
           size,
+          baseSize, // Store original size for scaling
           shape: shapeType,
           points: shapeType === "polygon" ? createPolygon(size) : null,
           color: getColors()[Math.floor(Math.random() * getColors().length)],
@@ -67,9 +92,14 @@ export default function ParticleField({ count = 300 }) {
         };
       });
     } else {
+      // Update existing particles for theme changes and size scaling
       const colors = getColors();
       particles.current.forEach((p) => {
         p.color = colors[Math.floor(Math.random() * colors.length)];
+        p.size = p.baseSize * particleSize; // Update size based on screen
+        if (p.shape === "polygon") {
+          p.points = createPolygon(p.size); // Recreate polygon with new size
+        }
       });
     }
 
@@ -99,7 +129,7 @@ export default function ParticleField({ count = 300 }) {
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
         // Stabilized force calculation - normalize by particle size to create mass-like behavior
-        const baseForce = 0 / (dist * dist + 50); // Added distance offset to prevent extreme forces
+        const baseForce = 3000 / (dist * dist + 50); // Added distance offset to prevent extreme forces
         const massNormalizedForce = baseForce * (p.size / 20); // Scale force proportionally to particle size (mass)
 
         if (mouseSpeed < 30) {
@@ -110,7 +140,8 @@ export default function ParticleField({ count = 300 }) {
         p.vy += dy * massNormalizedForce * 0.0005;
 
         if (dist < 120 && mouseSpeed > 1) {
-          const repulse = ((120 - dist) / 30) * mouseSpeed * 0.1 * (p.size / 20);
+          const repulse =
+            ((120 - dist) / 30) * mouseSpeed * 0.1 * (p.size / 20);
           p.vx -= (dx / dist) * repulse;
           p.vy -= (dy / dist) * repulse;
         }
@@ -190,14 +221,21 @@ export default function ParticleField({ count = 300 }) {
     const handleResize = () => {
       w = canvas.width = window.innerWidth;
       h = canvas.height = window.innerHeight;
+
+      // Reposition particles within new canvas
+      particles.current.forEach((p) => {
+        if (p.x > w) p.x = Math.random() * w;
+        if (p.y > h) p.y = Math.random() * h;
+      });
     };
+
     window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("resize", handleResize);
     };
-  }, [count, theme]);
+  }, [particleCount, theme]);
 
   return (
     <canvas
