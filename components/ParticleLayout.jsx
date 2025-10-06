@@ -13,7 +13,6 @@ export default function ParticleField() {
   const prevMouseRef = useRef({ x: mouseRef.current.x, y: mouseRef.current.y });
   const { theme } = useTheme();
 
-  // State to track responsive particle count and size
   const [particleCount, setParticleCount] = useState(300);
   const [particleSize, setParticleSize] = useState(1);
 
@@ -33,7 +32,7 @@ export default function ParticleField() {
         setParticleCount(60);
         setParticleSize(0.6);
       } else {
-        setParticleCount(40); // mobile
+        setParticleCount(40);
         setParticleSize(0.5);
       }
     };
@@ -50,14 +49,11 @@ export default function ParticleField() {
     let h = (canvas.height = window.innerHeight);
 
     const darkColors = ["#0A0A0B", "#141415", "#1A1A1C", "#202023"];
-
     const lightColors = ["#F2F2F3", "#E8E9EB", "#E0E0E0", "#E4E4E7"];
-
-
     const getColors = () => (theme === "dark" ? darkColors : lightColors);
 
     const createPolygon = (size) => {
-      const sides = Math.floor(Math.random() * 3) + 5; // 5–7 sides
+      const sides = Math.floor(Math.random() * 3) + 5;
       const points = [];
       for (let i = 0; i < sides; i++) {
         const angle = (Math.PI * 2 * i) / sides;
@@ -70,12 +66,11 @@ export default function ParticleField() {
       return points;
     };
 
-    // Initialize or update particles based on count and size
     if (particles.current.length !== particleCount) {
       particles.current = Array.from({ length: particleCount }, () => {
         const r = Math.random();
         const baseSize = r * r * 30 + 5;
-        const size = baseSize * particleSize; // Apply responsive sizing
+        const size = baseSize * particleSize;
         const shapeType = Math.random() < 0.7 ? "polygon" : "circle";
         return {
           x: Math.random() * w,
@@ -83,7 +78,7 @@ export default function ParticleField() {
           vx: (Math.random() - 0.5) * 0.5,
           vy: (Math.random() - 0.5) * 0.5,
           size,
-          baseSize, // Store original size for scaling
+          baseSize,
           shape: shapeType,
           points: shapeType === "polygon" ? createPolygon(size) : null,
           color: getColors()[Math.floor(Math.random() * getColors().length)],
@@ -92,13 +87,12 @@ export default function ParticleField() {
         };
       });
     } else {
-      // Update existing particles for theme changes and size scaling
       const colors = getColors();
       particles.current.forEach((p) => {
         p.color = colors[Math.floor(Math.random() * colors.length)];
-        p.size = p.baseSize * particleSize; // Update size based on screen
+        p.size = p.baseSize * particleSize;
         if (p.shape === "polygon") {
-          p.points = createPolygon(p.size); // Recreate polygon with new size
+          p.points = createPolygon(p.size);
         }
       });
     }
@@ -128,9 +122,8 @@ export default function ParticleField() {
         const dy = mouse.y - p.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-        // Stabilized force calculation - normalize by particle size to create mass-like behavior
-        const baseForce = 3000 / (dist * dist + 50); // Added distance offset to prevent extreme forces
-        const massNormalizedForce = baseForce * (p.size / 20); // Scale force proportionally to particle size (mass)
+        const baseForce = 3000 / (dist * dist + 50);
+        const massNormalizedForce = baseForce * (p.size / 20);
 
         if (mouseSpeed < 30) {
           p.vx += dx * massNormalizedForce * 0.001;
@@ -171,7 +164,6 @@ export default function ParticleField() {
           }
         }
 
-        // Increased damping for smaller particles to add stability
         const dampingFactor = Math.max(0.92, 0.98 - (1 / p.size) * 10);
         p.vx *= dampingFactor;
         p.vy *= dampingFactor;
@@ -180,7 +172,7 @@ export default function ParticleField() {
 
         if (p.x - p.size < 0) {
           p.x = p.size;
-          p.vx *= -0.8; // Reduced bounce for stability
+          p.vx *= -0.8;
         }
         if (p.x + p.size > w) {
           p.x = w - p.size;
@@ -221,8 +213,6 @@ export default function ParticleField() {
     const handleResize = () => {
       w = canvas.width = window.innerWidth;
       h = canvas.height = window.innerHeight;
-
-      // Reposition particles within new canvas
       particles.current.forEach((p) => {
         if (p.x > w) p.x = Math.random() * w;
         if (p.y > h) p.y = Math.random() * h;
@@ -230,6 +220,17 @@ export default function ParticleField() {
     };
 
     window.addEventListener("resize", handleResize);
+
+    // ✅ Detect zoom changes for full responsiveness
+    let lastPixelRatio = window.devicePixelRatio;
+    const checkZoom = () => {
+      if (window.devicePixelRatio !== lastPixelRatio) {
+        lastPixelRatio = window.devicePixelRatio;
+        handleResize(); // redraw everything on zoom change
+      }
+      requestAnimationFrame(checkZoom);
+    };
+    checkZoom();
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);

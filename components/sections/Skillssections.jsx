@@ -22,10 +22,10 @@ const Skillssections = () => {
         {/* Heading */}
         <motion.h2
           initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 10, y: 0 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-3xl md:text-5xl font-bold mb-12 bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent"
+          // viewport={{ once: true }}
+          className="text-4xl md:text-5xl font-bold text-cyan-600 dark:text-cyan-400 mb-2 "
         >
           Skills & Expertise
         </motion.h2>

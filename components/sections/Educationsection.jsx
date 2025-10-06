@@ -4,7 +4,7 @@ import React from "react";
 const Educationsection = () => {
   return (
     <section id="education">
-      <div className=" flex min-h-[100vh] justify-center items-center">
+      <div className=" flex min-h-[100vh] justify-center ">
         Education Section
 
       </div>

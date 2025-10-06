@@ -40,8 +40,9 @@ const Navbar = () => {
       if (window.innerWidth >= 768) setIsOpen(false);
     });
 
-    // Track sections in viewport
+    // Improved Intersection Observer
     const sections = document.querySelectorAll("section[id]");
+    
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -50,12 +51,23 @@ const Navbar = () => {
           }
         });
       },
-      { threshold: 0.6 } // 60% visible = active
+      { 
+        threshold: 0.3, // Lower threshold for better detection
+        rootMargin: "-20% 0px -20% 0px" // Adjust viewport area for detection
+      }
     );
 
     sections.forEach((section) => observer.observe(section));
-    return () => sections.forEach((section) => observer.unobserve(section));
+    
+    return () => {
+      sections.forEach((section) => observer.unobserve(section));
+    };
   }, []);
+
+  // Debug: Log active section changes
+  useEffect(() => {
+    console.log("Active Section:", activeSection);
+  }, [activeSection]);
 
   return (
     <motion.nav
@@ -63,41 +75,46 @@ const Navbar = () => {
         border: isOpen ? 0 : 4,
         height: isOpen ? 56 + menuHeight : 14 * 4,
       }}
-      style={{ width: isMobile ? "95%" : navWidthDesktop }} // ✅ Fixed width on mobile
+      style={{ width: isMobile ? "95%" : navWidthDesktop }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
       className={cn(
-        "w-full rounded-full mont sticky top-3  backdrop-blur-3xl h-14 mx-auto flex flex-col justify-center px-5 border z-50"
+        "w-full rounded-full mont sticky top-3 backdrop-blur-3xl h-14 mx-auto flex flex-col justify-center px-5 border border-cyan-600 drak:border-cyan-400 z-50"
       )}
     >
       <div className="w-full flex justify-between items-center">
         <div>Logo</div>
         <nav>
           <ul className="flex gap-8 max-md:hidden relative">
-            {navs.map(({ title, link, icon: Icon }, ind) => (
-              <motion.a
-                key={ind}
-                href={link}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: ind * 0.1 }}
-                className={cn(
-                  "cursor-pointer relative px-2 py-1 transition",
-                  activeSection === link.slice(1)
-                    ? "text-blue-600 dark:text-blue-400 font-semibold flex justify-center items-center gap-1"
-                    : "text-gray-700 dark:text-gray-200 flex justify-center items-center gap-2"
-                )}
-              >
-                <Icon size={15} weight="duotone" className="text-current" />
-                {title}
-                {activeSection === link.slice(1) && (
-                  <motion.div
-                    layoutId="activeIndicator"
-                    className="absolute bottom-0 left-0 right-0 h-[2px] bg-blue-500 dark:bg-blue-400 rounded-full"
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  />
-                )}
-              </motion.a>
-            ))}
+            {navs.map(({ title, link, icon: Icon }, ind) => {
+              const sectionId = link.slice(1); // Remove the '#' to get 'projects'
+              const isActive = activeSection === sectionId;
+              
+              return (
+                <motion.a
+                  key={ind}
+                  href={link}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: ind * 0.1 }}
+                  className={cn(
+                    "cursor-pointer relative px-2 py-1 transition",
+                    isActive
+                      ? "text-cyan-600 dark:text-cyan-400 font-semibold flex justify-center items-center gap-1"
+                      : "text-gray-700 dark:text-gray-200 flex justify-center items-center gap-2"
+                  )}
+                >
+                  <Icon size={15} weight="duotone" className="text-current" />
+                  {title}
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeIndicator"
+                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-cyan-600 dark:bg-cyan-400 rounded-full"
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                </motion.a>
+              );
+            })}
           </ul>
         </nav>
         <div className="flex items-center gap-2 justify-center">
@@ -136,22 +153,27 @@ const Navbar = () => {
         >
           <ul className="flex flex-col gap-2 mt-2">
             {isOpen &&
-              navs.map((nav, ind) => (
-                <motion.li
-                  key={ind}
-                  initial={{ x: -30, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ ease: "linear", duration: (ind + 1) * 0.1 }}
-                  className={cn(
-                    "opacity-85 hover:font-semibold hover:opacity-100 border-b last-of-type:border-none my-1 text-lg",
-                    activeSection === nav.link.slice(1)
-                      ? "text-blue-600 dark:text-blue-400 font-semibold"
-                      : ""
-                  )}
-                >
-                  <a href={nav.link}>{nav.title}</a>
-                </motion.li>
-              ))}
+              navs.map((nav, ind) => {
+                const sectionId = nav.link.slice(1);
+                const isActive = activeSection === sectionId;
+                
+                return (
+                  <motion.li
+                    key={ind}
+                    initial={{ x: -30, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ ease: "linear", duration: (ind + 1) * 0.1 }}
+                    className={cn(
+                      "opacity-85 hover:font-semibold hover:opacity-100 border-b last-of-type:border-none my-1 text-lg",
+                      isActive
+                        ? "text-cyan-600 dark:text-cyan-400 font-semibold"
+                        : ""
+                    )}
+                  >
+                    <a href={nav.link}>{nav.title}</a>
+                  </motion.li>
+                );
+              })}
           </ul>
         </motion.div>
       </AnimatePresence>

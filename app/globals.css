@@ -136,5 +136,7 @@ html {
 body {
   font-family: "Montserrat Alternates", sans-serif;
 }
-
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
 
