@@ -16,17 +16,13 @@ const Homesection = () => {
       id="home"
       className="relative w-full h-screen  transition-all duration-500 overflow-hidden"
     >
-      {/* Enhanced Particle Background */}
       <div className="absolute inset-0 opacity-60">
         <ParticleField />
       </div>
 
-      {/* Subtle Grid Overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_2px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,black,transparent)]" />
 
-      {/* Main Content */}
       <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-6 md:px-12 lg:px-24">
-        {/* Professional Introduction */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -70,7 +66,6 @@ const Homesection = () => {
           </motion.div>
         </motion.div>
 
-        {/* Professional CTA Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -90,7 +85,7 @@ const Homesection = () => {
           <motion.a
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            href="/resume.pdf" // Update with your actual resume path
+            href="/resume.pdf" 
             download
             className="group px-8 py-4 border-2 border-gray-300 dark:border-gray-600 hover:border-cyan-600 dark:hover:border-cyan-400 text-gray-700 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-cyan-400 rounded-xl font-semibold flex items-center gap-3 transition-all duration-300 backdrop-blur-sm"
           >

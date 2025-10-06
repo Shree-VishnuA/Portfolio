@@ -37,7 +37,6 @@ const Projectsection = () => {
     offset: ["start start", "end end"],
   });
 
-  // Fixed transformation - starts at 0 and moves to negative
   const x = useTransform(
     scrollYProgress,
     [0, 1],
